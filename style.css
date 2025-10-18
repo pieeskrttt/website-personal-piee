@@ -326,17 +326,6 @@ p {
 }
 /* End Services Section */
 
-/* ===== Projects Section dengan Background Gambar ===== */
-#projects {
-  background-image: url("img/project-bg.jpg"); /* Ganti dengan nama file background kamu */
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  position: relative;
-  z-index: 1;
-  padding: 80px 0;
-  color: #fff;
-}
 
 /* Overlay gelap biar teks tetap terbaca */
 #projects::before {
@@ -1060,17 +1049,15 @@ p {
   color: white;
 }
 
-/* ===== Projects Section dengan Background Gambar ===== */
 #projects {
-  background-image: url("./img/project-bg.jpg");
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  position: relative;
-  z-index: 1;
+  background-color: #2f2f2f; /* sama dengan background abu-abu section lain */
   padding: 80px 0;
   color: #fff;
+  position: relative;
+  z-index: 1;
 }
+
+
 
 /* Overlay hitam tipis biar teks tetap jelas */
 #projects::before {
@@ -1241,4 +1228,91 @@ p {
 #nav-overlay.active {
   opacity: 1;
   visibility: visible;
+}
+
+
+/* Warna background abu-abu gelap */
+body {
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+}
+
+/* Section umum */
+section {
+  background-color: #2b2b2b;
+  padding: 60px 0;
+}
+
+/* Khusus hero */
+#hero {
+  background-color: #1e1e1e;
+}
+
+/* Music Player Section */
+#music {
+  background-color: #2e2e2e;
+}
+
+/* Services Section */
+#services {
+  background-color: #2b2b2b;
+}
+
+/* Projects Section */
+#projects {
+  background-color: #2e2e2e;
+}
+
+/* About Section */
+#about {
+  background-color: #2b2b2b;
+}
+
+/* Contact Section */
+#contact {
+  background-color: #2e2e2e;
+}
+
+/* Footer */
+#footer {
+  background-color: #1e1e1e;
+  color: #ccc;
+}
+
+/* Optional: tombol dan teks terang agar kontras */
+.cta {
+  background-color: #444;
+  color: #fff;
+  border: none;
+}
+
+.section-title span {
+  color: #00bcd4;
+}
+
+.project-item,
+.service-item,
+.contact-card {
+  background-color: #3a3a3a;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+#services .section-title,
+#services p {
+  color: white;
+}
+
+#about .section-title,
+#about p {
+  color: white;
+}
+#contact .section-title,
+#contact h2,
+#contact p {
+  color: white;
+}
+
+#music {
+  background: linear-gradient(135deg, #001f4d, #000000);
 }
