@@ -1316,3 +1316,141 @@ section {
 #music {
   background: linear-gradient(135deg, #001f4d, #000000);
 }
+
+/* === PERBAIKAN RESPONSIVE NAVBAR & FLOATING PLAYER === */
+
+/* Pastikan navbar tetap rapi di semua layar */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background: rgba(20, 20, 20, 0.95);
+  backdrop-filter: blur(8px);
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 25px;
+  flex-wrap: nowrap;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  transition: all 0.3s ease;
+}
+
+/* Tombol hamburger */
+.hamburger {
+  display: none;
+  cursor: pointer;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 1100;
+}
+
+.hamburger div {
+  width: 25px;
+  height: 3px;
+  background: #fff;
+  border-radius: 2px;
+}
+
+/* Saat di HP */
+@media (max-width: 768px) {
+  .nav-links {
+    position: absolute;
+    top: 60px;
+    right: -100%;
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(6px);
+    flex-direction: column;
+    width: 70%;
+    height: calc(100vh - 60px);
+    align-items: center;
+    justify-content: center;
+    transition: right 0.3s ease;
+  }
+
+  .nav-links.active {
+    right: 0;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+}
+
+/* === FLOATING MUSIC PLAYER === */
+.music-player {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  width: 320px;
+  max-width: 90%;
+  background: rgba(30, 30, 30, 0.95);
+  color: white;
+  padding: 15px;
+  border-radius: 16px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
+  z-index: 900;
+  overflow: hidden;
+}
+
+/* Playlist bisa di-scroll */
+.music-player .playlist {
+  max-height: 150px;
+  overflow-y: auto;
+  margin-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 8px;
+}
+
+/* Khusus di HP agar tidak keluar layar */
+@media (max-width: 768px) {
+  .music-player {
+    bottom: 10px;
+    right: 10px;
+    left: 10px;
+    width: auto;
+    max-width: none;
+    border-radius: 12px;
+  }
+}
+
+/* Tombol kontrol tetap di tengah */
+.music-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.music-controls button {
+  background: linear-gradient(135deg, #ff5f6d, #ffc371);
+  border: none;
+  padding: 10px 14px;
+  border-radius: 50%;
+  cursor: pointer;
+  color: white;
+  font-size: 18px;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+.music-controls button:hover {
+  transform: scale(1.1);
+  background: linear-gradient(135deg, #ff9966, #ff5e62);
+}
+
+/* Tulisan "Sedang Memutar" di atas player */
+.now-playing {
+  text-align: center;
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 8px;
+}
