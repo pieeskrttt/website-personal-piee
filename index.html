@@ -124,220 +124,407 @@
   </div>
 </section>
 
-<!-- ❄️ MUSIC VISUALIZER FULLSCREEN WITH SNOW PARTICLES -->
+<!-- =========================
+  MUSIC SECTION (REPLACE existing <section id="music">)
+  Contains: visualizer + snow + audio + iPhone-style floating player
+  ========================= -->
 <section id="music" style="position: relative; height: 100vh; overflow: hidden;">
-  
-  <!-- Background Canvas -->
+
+  <!-- Visualizer Canvas (z-index 1) -->
   <canvas id="visualizer" style="
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+    position:absolute; left:0; top:0; width:100%; height:100%; z-index:1;
     background: radial-gradient(circle at center, rgba(0,0,0,0.7), rgba(0,0,0,1));
-    z-index: 1;
   "></canvas>
 
-  <!-- Konten di Depan -->
-  <div class="container" style="
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    text-align: center;
-    color: white;
-  ">
+  <!-- Snow Canvas (z-index 2) -->
+  <canvas id="snow" style="
+    position:absolute; left:0; top:0; width:100%; height:100%; z-index:2; pointer-events:none;
+  "></canvas>
 
-    <div id="music-logo" style="margin-bottom: 25px; transition: transform 0.1s ease;">
+  <!-- Foreground content (logo + title + native audio control kept) (z-index 3) -->
+  <div class="container" style="
+    position:relative; z-index:3; height:100%; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center; color:white;
+  ">
+    <div id="music-logo" style="margin-bottom:20px; transition:transform 0.12s ease;">
       <img src="img/logo.png" alt="Logo" style="
-        width: 160px;
-        height: 160px;
-        object-fit: contain;
-        border-radius: 50%;
-        box-shadow: 0 0 30px rgba(0,255,255,0.9);
-        animation: glow 2s infinite alternate;
+        width:160px; height:160px; object-fit:contain; border-radius:50%;
+        box-shadow:0 0 30px rgba(0,255,255,0.9); animation:glow 2s infinite alternate;
       ">
     </div>
 
-    <!-- 🔥 Ganti Judul di Sini -->
-    <h1 class="section-title" style="
-      color:white;
-      font-size: 3rem;
-      letter-spacing: 2px;
-      text-shadow: 0 0 15px rgba(0,255,255,0.8);
-    ">Pieee <span style="color:#00ffff;">Fvnky</span></h1>
+    <h1 style="color:#fff; font-size:3rem; letter-spacing:2px; text-shadow:0 0 12px rgba(0,255,255,0.8);">
+      Pieee <span style="color:#00ffff;">Fvnky</span>
+    </h1>
 
-    <p id="now-playing" style="color:#ccc;">Sedang memutar: <strong>-</strong></p>
-
+    <!-- now-playing text moved to floating (floating will show current title) -->
+    <!-- keep native audio control visible (so manual seek available), but it's optional to hide it -->
     <audio id="bg-music" controls style="
-      width: 80%; 
-      max-width: 500px; 
-      margin-top: 10px; 
-      border-radius: 10px; 
-      backdrop-filter: blur(10px);
-      background: rgba(255,255,255,0.1);
+      width:80%; max-width:520px; margin-top:12px; border-radius:10px;
+      backdrop-filter: blur(10px); background: rgba(255,255,255,0.06);
     ">
       <source src="music/lagu1.mp3" type="audio/mp3">
+      Browser kamu tidak mendukung audio.
     </audio>
+  </div>
 
-    <div style="margin-top: 20px;">
-      <button id="prev" class="cta" style="margin: 5px;">⏮ Sebelumnya</button>
-      <button id="play" class="cta" style="margin: 5px;">▶️ Putar</button>
-      <button id="next" class="cta" style="margin: 5px;">⏭ Selanjutnya</button>
+  <!-- ================= Floating iPhone-style mini player (only visible when #music in view) ================= -->
+  <div id="floating-player" aria-hidden="true" style="
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 20px;
+    z-index: 9999;
+    width: 92%;
+    max-width: 760px;
+    pointer-events: auto;
+    display: none; /* shown only when #music visible via JS */
+  ">
+    <div style="
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      background: rgba(12,12,12,0.55);
+      border-radius: 14px;
+      padding: 10px 14px;
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.04);
+      box-shadow: 0 6px 30px rgba(0,0,0,0.6);
+    ">
+      <!-- Left: small cover (optional) -->
+      <div style="display:flex; align-items:center; gap:12px;">
+        <img id="fp-cover" src="img/logo.png" alt="cover" style="width:56px; height:56px; border-radius:10px; object-fit:cover; box-shadow:0 4px 12px rgba(0,0,0,0.6);">
+        <div style="min-width:200px;">
+          <div id="fp-title" style="color:#fff; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">-</div>
+          <div id="fp-sub" style="color:#bdbdbd; font-size:0.85rem; margin-top:4px;">Pieee Fvnky</div>
+        </div>
+      </div>
+
+      <!-- Center: controls -->
+      <div style="display:flex; gap:12px; align-items:center; justify-content:center;">
+        <button id="fp-back10" class="fp-btn" title="Mundur 10 detik" style="all:unset; cursor:pointer;">
+          <div style="width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.04);">
+            <i class="fas fa-rotate-left" style="color:#fff; font-size:18px;"></i>
+          </div>
+        </button>
+
+        <button id="fp-prev" class="fp-btn" title="Prev" style="all:unset; cursor:pointer;">
+          <div style="width:52px; height:52px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.04);">
+            <i class="fas fa-step-backward" style="color:#fff; font-size:20px;"></i>
+          </div>
+        </button>
+
+        <button id="fp-play" class="fp-btn" title="Play / Pause" style="all:unset; cursor:pointer;">
+          <div id="fp-play-inner" style="width:68px; height:68px; border-radius:16px; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, rgba(0,255,255,0.12), rgba(0,170,255,0.06)); border:1px solid rgba(255,255,255,0.06); box-shadow:0 8px 28px rgba(0,170,255,0.08);">
+            <i id="fp-play-icon" class="fas fa-play" style="font-size:26px; color:white;"></i>
+          </div>
+        </button>
+
+        <button id="fp-next" class="fp-btn" title="Next" style="all:unset; cursor:pointer;">
+          <div style="width:52px; height:52px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.04);">
+            <i class="fas fa-step-forward" style="color:#fff; font-size:20px;"></i>
+          </div>
+        </button>
+
+        <button id="fp-forward10" class="fp-btn" title="Maju 10 detik" style="all:unset; cursor:pointer;">
+          <div style="width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.04);">
+            <i class="fas fa-rotate-right" style="color:#fff; font-size:18px;"></i>
+          </div>
+        </button>
+      </div>
+
+      <!-- Right: small playlist icon & expand button -->
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button id="fp-toggle-playlist" title="Tampilkan Playlist" style="all:unset; cursor:pointer;">
+          <div style="width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03);">
+            <i class="fas fa-list" style="color:#fff;"></i>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Playlist panel (hidden by default, appears on right part of floating) -->
+    <div id="fp-playlist-panel" style="
+      display:none;
+      margin-top:10px;
+      background: rgba(8,8,8,0.65);
+      border-radius: 10px;
+      padding:8px;
+      max-height:240px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,0.04);
+    ">
+      <div style="font-size:0.9rem; color:#aaf6ff; font-weight:600; margin-bottom:6px;">Playlist</div>
+      <ul id="fp-playlist" style="list-style:none; padding:0; margin:0; max-height:180px; overflow:auto;">
+        <!-- list items inserted by JS -->
+      </ul>
     </div>
   </div>
 </section>
 
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <style>
-@keyframes glow {
-  from { box-shadow: 0 0 25px #00ffff; }
-  to { box-shadow: 0 0 50px #ff00ff; }
-}
+@keyframes glow { from { box-shadow: 0 0 25px #00ffff; } to { box-shadow: 0 0 50px #ff00ff; } }
+#fp-playlist::-webkit-scrollbar { height:6px; width:6px; }
+#fp-playlist::-webkit-scrollbar-thumb { background: linear-gradient(180deg,#00ffff,#ff00ff); border-radius:6px; }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  // elements
   const music = document.getElementById('bg-music');
-  const playBtn = document.getElementById('play');
-  const nextBtn = document.getElementById('next');
-  const prevBtn = document.getElementById('prev');
-  const title = document.getElementById('now-playing').querySelector('strong');
-  const canvas = document.getElementById('visualizer');
-  const ctx = canvas.getContext('2d');
-  const logo = document.getElementById('music-logo');
+  const visualizerCanvas = document.getElementById('visualizer');
+  const visualizerCtx = visualizerCanvas.getContext('2d');
+  const snowCanvas = document.getElementById('snow');
+  const snowCtx = snowCanvas.getContext('2d');
 
+  const floating = document.getElementById('floating-player');
+  const fpPlay = document.getElementById('fp-play');
+  const fpPlayIcon = document.getElementById('fp-play-icon');
+  const fpPrev = document.getElementById('fp-prev');
+  const fpNext = document.getElementById('fp-next');
+  const fpBack10 = document.getElementById('fp-back10');
+  const fpFwd10 = document.getElementById('fp-forward10');
+  const fpTitle = document.getElementById('fp-title');
+  const fpCover = document.getElementById('fp-cover');
+  const fpToggle = document.getElementById('fp-toggle-playlist');
+  const fpPlaylistPanel = document.getElementById('fp-playlist-panel');
+  const fpPlaylistUL = document.getElementById('fp-playlist');
+
+  // playlist data (initial)
   const playlist = [
-    { file: "music/lagu1.mp3", title: "Dalinda X Melody" },
-    { file: "music/lagu2.mp3", title: "SAYANG BOOTLEG" },
-    { file: "music/lagu3.mp3", title: "CLBK SPEED UP" },
-    { file: "music/lagu4.mp3", title: "Konco Mesra" }
+    { file: "music/lagu1.mp3", title: "Dalinda X Melody", cover: "img/logo.png" },
+    { file: "music/lagu2.mp3", title: "SAYANG BOOTLEG", cover: "img/logo.png" },
+    { file: "music/lagu3.mp3", title: "CLBK SPEED UP", cover: "img/logo.png" },
+    { file: "music/lagu4.mp3", title: "Konco Mesra", cover: "img/logo.png" }
   ];
 
   let current = 0;
-  let audioCtx, analyser, src, bufferLength, dataArray;
-  let animationId;
+  let audioCtx, analyser, dataArray, rafId;
   let snowflakes = [];
 
-  function createSnowflakes(count) {
-    snowflakes = [];
-    for (let i = 0; i < count; i++) {
+  // --- make playlist UI dynamic & usable from outside (addTrack)
+  function renderPlaylist() {
+    fpPlaylistUL.innerHTML = '';
+    playlist.forEach((t, i) => {
+      const li = document.createElement('li');
+      li.dataset.index = i;
+      li.className = 'fp-track';
+      li.style.padding = '8px 6px';
+      li.style.borderRadius = '8px';
+      li.style.color = (i === current) ? '#ff9bff' : '#d4d4d4';
+      li.style.cursor = 'pointer';
+      li.textContent = (i === current ? '▶ ' : '   ') + t.title;
+      li.addEventListener('click', () => loadSong(i));
+      fpPlaylistUL.appendChild(li);
+    });
+  }
+
+  // allow other scripts to add track dynamically
+  window.addTrack = function (file, title, cover) {
+    playlist.push({ file: file, title: title, cover: cover || 'img/logo.png' });
+    renderPlaylist();
+  };
+
+  function highlightPlaylist() { renderPlaylist(); }
+
+  // --- load & play
+  function loadSong(index) {
+    current = index;
+    music.src = playlist[index].file;
+    music.load();
+    fpTitle.textContent = playlist[index].title;
+    fpCover.src = playlist[index].cover || 'img/logo.png';
+    music.play().catch(()=>{ /* autoplay blocked, will play after user interaction */ });
+    updatePlayIcon();
+    highlightPlaylist();
+  }
+
+  function updatePlayIcon() {
+    fpPlayIcon.className = music.paused ? 'fas fa-play' : 'fas fa-pause';
+  }
+
+  // controls
+  fpPlay.addEventListener('click', () => {
+    if (music.paused) {
+      music.play();
+    } else music.pause();
+    updatePlayIcon();
+  });
+  fpPrev.addEventListener('click', () => { current = (current-1 + playlist.length) % playlist.length; loadSong(current); });
+  fpNext.addEventListener('click', () => { current = (current+1) % playlist.length; loadSong(current); });
+  fpBack10.addEventListener('click', () => { music.currentTime = Math.max(0, music.currentTime - 10); });
+  fpFwd10.addEventListener('click', () => { music.currentTime = Math.min(music.duration || 0, music.currentTime + 10); });
+
+  fpToggle.addEventListener('click', () => {
+    fpPlaylistPanel.style.display = (fpPlaylistPanel.style.display === 'none' || fpPlaylistPanel.style.display === '') ? 'block' : 'none';
+  });
+
+  // update floating's now playing text above controls (also keep native audio visible)
+  const nowPlayingText = document.getElementById('now-playing');
+  music.addEventListener('play', () => updatePlayIcon());
+  music.addEventListener('pause', () => updatePlayIcon());
+  music.addEventListener('timeupdate', () => {
+    const titleElem = nowPlayingText.querySelector('strong');
+    if (titleElem) titleElem.textContent = playlist[current].title || '-';
+  });
+
+  music.addEventListener('ended', () => {
+    current = (current+1) % playlist.length;
+    loadSong(current);
+  });
+
+  // --- IntersectionObserver: show floating only when #music section visible
+  const musicSection = document.getElementById('music');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        floating.style.display = 'block';
+        floating.setAttribute('aria-hidden','false');
+      } else {
+        floating.style.display = 'none';
+        floating.setAttribute('aria-hidden','true');
+      }
+    });
+  }, { threshold: 0.25 });
+  io.observe(musicSection);
+
+  // --- Visualizer setup
+  function resizeCanvases() {
+    visualizerCanvas.width = window.innerWidth;
+    visualizerCanvas.height = window.innerHeight;
+    snowCanvas.width = window.innerWidth;
+    snowCanvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeCanvases);
+  resizeCanvases();
+
+  function setupAudioAnalyser() {
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioCtx.createMediaElementSource(music);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    const bufferLength = analyser.frequencyBinCount;
+    dataArray = new Uint8Array(bufferLength);
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+
+    // create initial snowflakes
+    for (let i=0;i<120;i++){
       snowflakes.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * 3 + 1,
-        d: Math.random() + 0.5,
-        o: Math.random() * 0.8 + 0.2,
+        x: Math.random()*snowCanvas.width,
+        y: Math.random()*snowCanvas.height,
+        r: Math.random()*2 + 0.8,
+        speed: Math.random()*0.6 + 0.2,
+        o: Math.random()*0.8 + 0.2
       });
     }
   }
 
-  function setupVisualizer() {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      src = audioCtx.createMediaElementSource(music);
-      analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 256;
-      bufferLength = analyser.frequencyBinCount;
-      dataArray = new Uint8Array(bufferLength);
-      src.connect(analyser);
-      analyser.connect(audioCtx.destination);
-      createSnowflakes(150);
-    }
-  }
-
   function drawVisualizer() {
-    animationId = requestAnimationFrame(drawVisualizer);
+    if (!analyser) return;
     analyser.getByteFrequencyData(dataArray);
+    visualizerCtx.clearRect(0,0,visualizerCanvas.width, visualizerCanvas.height);
 
-    const w = canvas.width = window.innerWidth;
-    const h = canvas.height = window.innerHeight;
-    ctx.clearRect(0, 0, w, h);
+    // background subtle dark overlay
+    visualizerCtx.fillStyle = 'rgba(0,0,0,0.25)';
+    visualizerCtx.fillRect(0,0,visualizerCanvas.width, visualizerCanvas.height);
 
-    const gradient = ctx.createLinearGradient(0, 0, w, h);
-    gradient.addColorStop(0, `hsl(${(Date.now()/15)%360},100%,60%)`);
-    gradient.addColorStop(1, `hsl(${(Date.now()/5)%360},100%,45%)`);
-    ctx.fillStyle = gradient;
-
-    const barWidth = (w / bufferLength) * 1.3;
+    const w = visualizerCanvas.width;
+    const h = visualizerCanvas.height;
+    const barWidth = (w / dataArray.length) * 1.6;
     let x = 0;
     let bass = 0;
-
-    for (let i = 0; i < bufferLength; i++) {
-      const barHeight = (dataArray[i] / 255) * (h * 0.6);
-      if (i < 15) bass += dataArray[i];
-      const y = (h - barHeight) / 2;
-      ctx.fillRect(x, y, barWidth, barHeight);
+    for (let i=0;i<dataArray.length;i++){
+      const v = dataArray[i] / 255;
+      if (i < 16) bass += dataArray[i];
+      const barH = v * (h * 0.55);
+      // RGB color cycling
+      const hue = (i * 4 + (Date.now()/20)) % 360;
+      visualizerCtx.fillStyle = `hsl(${hue}, 90%, 55%)`;
+      visualizerCtx.fillRect(x, (h - barH)/2, barWidth, barH);
       x += barWidth + 1;
     }
 
-    const bassAvg = bass / 15;
-    const scale = 1 + (bassAvg / 250);
-    logo.style.transform = `scale(${scale})`;
+    // scale logo with bass
+    const bassAvg = bass / 16;
+    const scale = 1 + (bassAvg/300);
+    const musicLogo = document.getElementById('music-logo');
+    if (musicLogo) musicLogo.style.transform = `scale(${scale})`;
+  }
 
-    // ❄️ Salju mengikuti beat
-    ctx.beginPath();
-    for (let i = 0; i < snowflakes.length; i++) {
-      const s = snowflakes[i];
-      ctx.moveTo(s.x, s.y);
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2, true);
+  // snow draw - white soft dots, fall speed influenced by low-frequency energy
+  function drawSnowAndLoop() {
+    requestAnimationFrame(drawSnowAndLoop);
+    if (analyser && dataArray) {
+      analyser.getByteFrequencyData(dataArray);
     }
-    ctx.fillStyle = `rgba(255,255,255,0.9)`;
-    ctx.fill();
-
-    for (let i = 0; i < snowflakes.length; i++) {
+    snowCtx.clearRect(0,0,snowCanvas.width,snowCanvas.height);
+    // compute low freq energy
+    let low = 0;
+    if (dataArray) {
+      for (let i=0;i<16 && i<dataArray.length;i++) low += dataArray[i];
+      low = low / Math.min(16, dataArray.length);
+    }
+    // update and draw flakes
+    for (let i=snowflakes.length-1;i>=0;i--){
       const s = snowflakes[i];
-      s.y += s.d * (1 + bassAvg / 150);
-      if (s.y > h) {
-        s.y = 0;
-        s.x = Math.random() * w;
+      // modulate speed slightly with low energy so on beat snow falls a bit faster
+      const speed = s.speed * (1 + low/200);
+      s.y += speed;
+      // slight horizontal drift
+      s.x += Math.sin((s.y + i) * 0.01) * 0.4;
+      snowCtx.beginPath();
+      snowCtx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      snowCtx.fillStyle = `rgba(255,255,255, ${s.o})`;
+      snowCtx.fill();
+      if (s.y > snowCanvas.height + 10) {
+        // reset to top
+        s.y = -10 - Math.random()*20;
+        s.x = Math.random()*snowCanvas.width;
+        s.r = Math.random()*2 + 0.8;
+        s.speed = Math.random()*0.6 + 0.2;
+        s.o = Math.random()*0.7 + 0.15;
       }
     }
-  }
-
-  function loadSong(index) {
-    music.src = playlist[index].file;
-    music.load();
-    title.textContent = playlist[index].title;
-    playSong();
-  }
-
-  function playSong() {
-    setupVisualizer();
-    audioCtx.resume();
-    music.play().catch(() => console.log("Autoplay dicegah browser."));
-    playBtn.textContent = '⏸ Jeda';
+    // visualizer draw
     drawVisualizer();
   }
 
-  function pauseSong() {
-    music.pause();
-    playBtn.textContent = '▶️ Putar';
-    cancelAnimationFrame(animationId);
+  // Start analyser on first user gesture (browsers block AudioContext resume/autoplay until user interacts)
+  function requireUserGesture() {
+    function resumeOnce() {
+      setupAudioAnalyser();
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+      // try to play if music was intended to autoplay
+      // music.play().catch(()=>{});
+      document.removeEventListener('click', resumeOnce);
+    }
+    document.addEventListener('click', resumeOnce, { once: true });
   }
+  requireUserGesture();
 
-  playBtn.addEventListener('click', () => {
-    if (music.paused) playSong();
-    else pauseSong();
-  });
+  // start snow loop now (visualizer draws only when analyser ready)
+  drawSnowAndLoop();
 
-  nextBtn.addEventListener('click', () => {
-    current = (current + 1) % playlist.length;
-    loadSong(current);
-  });
+  // initial render playlist & load first song
+  renderPlaylist();
+  loadSong(0);
 
-  prevBtn.addEventListener('click', () => {
-    current = (current - 1 + playlist.length) % playlist.length;
-    loadSong(current);
-  });
+  // ensure update play icon if user uses native controls
+  music.addEventListener('play', updatePlayIcon);
+  music.addEventListener('pause', updatePlayIcon);
 
-  music.addEventListener('ended', () => {
-    current = (current + 1) % playlist.length;
-    loadSong(current);
-  });
+  // expose a helper to programmatically show floating (if needed)
+  window.showFloatingPlayer = (show) => {
+    floating.style.display = show ? 'block' : 'none';
+  };
 
-  music.volume = 0.6;
-  loadSong(current);
+  // ensure floating only on #music: IntersectionObserver already handles show/hide
 });
 </script>
 <!-- Coding Learning Section -->
